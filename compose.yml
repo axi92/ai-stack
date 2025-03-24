@@ -3,6 +3,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
+    runtime: nvidia
     restart: unless-stopped
     environment:
       - PUID=${PUID:-1000}
@@ -10,6 +11,7 @@ services:
       - OLLAMA_KEEP_ALIVE=24h
       - ENABLE_IMAGE_GENERATION=True
       - COMFYUI_BASE_URL=http://stable-diffusion-webui:7860
+      - TZ=Europe/Vienna
     networks:
       - ai-stack
     volumes:
@@ -33,6 +35,7 @@ services:
     networks:
       - ai-stack
     environment:
+      - TZ=Europe/Vienna
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - 'OLLAMA_BASE_URL=http://ollama:11434'
@@ -58,6 +61,7 @@ services:
     networks:
       - ai-stack
     environment:
+      - TZ=Europe/Vienna
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
     volumes:
@@ -75,6 +79,7 @@ services:
     build: ./stable-diffusion-webui-docker/services/download/
     image: comfy-download
     environment:
+      - TZ=Europe/Vienna
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
     volumes:
@@ -85,7 +90,9 @@ services:
   stable-diffusion-webui:
     build: ./stable-diffusion-webui-docker/services/comfy/
     image: comfy-ui
+    runtime: nvidia
     environment:
+      - TZ=Europe/Vienna
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - CLI_ARGS=
@@ -122,6 +129,7 @@ services:
       - ./whisper/db_data:/data/db
       - ./whisper/db_data/logs/:/var/log/mongodb/
     environment:
+      - TZ=Europe/Vienna
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - MONGO_INITDB_ROOT_USERNAME=${DB_USER:-whishper}
@@ -132,6 +140,7 @@ services:
 
   translate:
     container_name: whisper-libretranslate
+    runtime: nvidia
     image: libretranslate/libretranslate:latest-cuda
     env_file:
       - .env
@@ -146,6 +155,7 @@ services:
     user: root
     tty: true
     environment:
+      - TZ=Europe/Vienna
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - LT_DISABLE_WEB_UI=True
@@ -165,6 +175,7 @@ services:
     container_name: whisper
     pull_policy: always
     image: pluja/whishper:latest-gpu
+    runtime: nvidia
     env_file:
       - .env
     networks:
@@ -180,6 +191,7 @@ services:
       - mongo
       - translate
     environment:
+      - TZ=Europe/Vienna
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - PUBLIC_INTERNAL_API_HOST=${WHISHPER_HOST}
@@ -200,4 +212,4 @@ services:
 
 networks:
   ai-stack:
-    external: true
+    driver: bridge
